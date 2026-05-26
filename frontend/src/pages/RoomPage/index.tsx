@@ -1,16 +1,27 @@
 import Whiteboard from "../../components/WhiteBoard";
 import "./index.css";
-import  { useState } from "react";
+import  { useRef, useState } from "react";
+
+// Define a type for our available drawing tools
+type DrawingTool = "pencil" | "line" | "rect";
 
 const RoomPage = () => {
-  const [tool, setTool] = useState("pencil");
-  const [color, setColor] = useState("#000000");
-  const [usersOnline, setUsersOnline] = useState(0);
+
+  // canvas Refrence
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const canvasContextRef = useRef<CanvasRenderingContext2D | null | undefined>(null)
+
+  const [tool, setTool] = useState<DrawingTool>("pencil");
+  const [color, setColor] = useState<string>("#000000");
+  const [usersOnline, setUsersOnline] = useState<number>(0);
+
+  const [elements,setElements] = useState<number[]>([])
+
 
   return (
     <div className="container mx-auto px-4 min-h-screen  flex flex-col items-center">
       {/* Title */}
-      <h1 className="text-3xl font-bold text-center text-gray-800 mt-4">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mt-4 shadow-cyan-400">
         Whiteboard Sharing App
       </h1>
 
@@ -18,39 +29,19 @@ const RoomPage = () => {
       <div className="w-full max-w-5xl bg-white shadow-md rounded-lg p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
         {/* Tool Selectors (Radio Group) */}
         <div className="flex items-center gap-6 border-r border-gray-200 pr-6">
-          <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer">
-            <input
-              type="radio"
-              name="tool"
-              value="pencil"
-              checked={tool === "pencil"}
-              onChange={(e) => setTool(e.target.value)}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            Pencil
-          </label>
-          <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer">
-            <input
-              type="radio"
-              name="tool"
-              value="line"
-              checked={tool === "line"}
-              onChange={(e) => setTool(e.target.value)}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            Line
-          </label>
-          <label className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer">
-            <input
-              type="radio"
-              name="tool"
-              value="rect"
-              checked={tool === "rect"}
-              onChange={(e) => setTool(e.target.value)}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            Rectangle
-          </label>
+          {(["pencil", "line", "rect"] as DrawingTool[]).map((t,id) => (
+            <label key={id} className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer">
+              <input
+                type="radio"
+                name="tool"
+                value={t}
+                checked={tool === t}
+                onChange={(e) => setTool(e.target.value as DrawingTool)}
+                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              {t === 'rect' ? "Rectangle": t }
+            </label>
+          ))}
         </div>
 
         {/* Color Picker */}
@@ -88,7 +79,12 @@ const RoomPage = () => {
 
       {/* Main Drawing Area Wrapper */}
       <div className="w-full max-w-5xl h-125 bg-white shadow-lg rounded-xs overflow-hidden mb-8">
-        <Whiteboard />
+        <Whiteboard 
+          canvasRef={canvasRef}
+          canvasContextRef={canvasContextRef}
+          elements={elements}
+          setElements={setElements}
+        />
       </div>
     </div>
   );
