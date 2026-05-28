@@ -84,6 +84,7 @@ const RoomPage = () => {
           canvasContextRef={canvasContextRef}
           elements={elements}
           setElements={setElements}
+          tool={tool}
         />
       </div>
     </div>
