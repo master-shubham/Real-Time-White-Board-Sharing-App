@@ -1,20 +1,9 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import rough from "roughjs";
+import type { DrawingTool, ElementType } from "../../types";
 
 const roughGenerator = rough.generator();
 
-// define object type.
-type ElementType = {
-  type: string;
-  offsetX: number;
-  offsetY: number;
-  path?: [number, number][];
-  width?: number;
-  height?: number;
-  storke: string;
-};
-
-type DrawingTool = "pencil" | "line" | "rect";
 
 // RoomPage Props Type
 type CanvasProps = {
@@ -25,6 +14,7 @@ type CanvasProps = {
   elements: ElementType[];
   setElements: React.Dispatch<React.SetStateAction<ElementType[]>>;
   tool: DrawingTool;
+  color:string;
 };
 
 const Whiteboard = ({
@@ -33,6 +23,7 @@ const Whiteboard = ({
   elements,
   setElements,
   tool,
+  color
 }: CanvasProps) => {
   //check user can drawing or not
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
@@ -46,8 +37,22 @@ const Whiteboard = ({
     canvas.width = window.innerWidth * 2;
     const canvasContext = canvas?.getContext("2d");
 
+    if (!canvasContext) return
+
+    canvasContext.strokeStyle = color;
+    canvasContext.lineWidth = 2;
+    canvasContext.lineCap = "round";
+
     canvasContextRef.current = canvasContext;
+
   }, []);
+
+ useEffect(() => {
+  if (!canvasContextRef.current) return;
+
+  canvasContextRef.current.strokeStyle = color;
+}, [color]);
+
 
   useLayoutEffect(() => {
     const roughCanvas = rough.canvas(canvasRef.current!);
@@ -69,6 +74,11 @@ const Whiteboard = ({
              element.offsetY,
              element.width ?? 0,
              element.height ?? 0,
+             {
+              stroke: element.stroke,
+              strokeWidth: 5,
+              roughness:0,
+             },
            ),
          );
        } else if (element.type === "line") {
@@ -78,11 +88,20 @@ const Whiteboard = ({
              element.offsetY,
              element.width ?? 0,
              element.height ?? 0,
+             {
+               stroke: element.stroke,
+               strokeWidth: 5,
+               roughness: 0,
+             },
            ),
          );
        } else if (element.type === "pencil") {
          if (element.path) {
-           roughCanvas.linearPath(element.path);
+           roughCanvas.linearPath(element.path, {
+             stroke: element.stroke,
+             strokeWidth: 5,
+             roughness: 0,
+           });
          }
        }
     });
@@ -102,7 +121,7 @@ const Whiteboard = ({
           offsetX,
           offsetY,
           path: [[offsetX, offsetY]],
-          storke: "black",
+          stroke: color,
         },
       ]);
     } else if (tool === "line") {
@@ -114,7 +133,7 @@ const Whiteboard = ({
           offsetY,
           width: offsetX,
           height: offsetY,
-          storke: "black",
+          stroke: color,
         },
       ]);
     } else if (tool === "rect") {
@@ -126,7 +145,7 @@ const Whiteboard = ({
           offsetY,
           width: 0,
           height: 0,
-          storke: "black",
+          stroke: color,
         },
       ]);
     }

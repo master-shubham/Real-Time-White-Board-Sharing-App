@@ -1,22 +1,51 @@
 import Whiteboard from "../../components/WhiteBoard";
+import type { DrawingTool, ElementType } from "../../types";
 import "./index.css";
-import  { useRef, useState } from "react";
-
-// Define a type for our available drawing tools
-type DrawingTool = "pencil" | "line" | "rect";
+import { useRef, useState } from "react";
 
 const RoomPage = () => {
-
   // canvas Refrence
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const canvasContextRef = useRef<CanvasRenderingContext2D | null | undefined>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasContextRef = useRef<CanvasRenderingContext2D | null | undefined>(
+    null,
+  );
 
   const [tool, setTool] = useState<DrawingTool>("pencil");
   const [color, setColor] = useState<string>("#000000");
   const [usersOnline, setUsersOnline] = useState<number>(0);
+  const [history,setHistory] = useState<ElementType[]>([])
 
-  const [elements,setElements] = useState<number[]>([])
+  const [elements, setElements] = useState<ElementType[]>([]);
 
+  const handleClearCanvas = () => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
+    const contextRef = canvas.getContext("2d");
+
+    if (!contextRef) return;
+
+    contextRef.clearRect(0, 0, canvas.width, canvas.height);
+
+    setElements([]);
+  };
+
+  const handleUndo=()=>{
+    setHistory((prevHistory:ElementType[])=>[...prevHistory,elements[elements.length-1]])
+    setElements((prevElement:ElementType[])=>prevElement.slice(0,prevElement.length-1))
+
+  }
+
+  const handleRedo=()=>{
+     setElements((prevElement: ElementType[]) => [
+       ...prevElement,
+       history[history.length - 1],
+     ]);
+     setHistory((prevHistory: ElementType[]) =>
+       prevHistory.slice(0, prevHistory.length - 1),
+     ); 
+  }
 
   return (
     <div className="container mx-auto px-4 min-h-screen  flex flex-col items-center">
@@ -29,8 +58,11 @@ const RoomPage = () => {
       <div className="w-full max-w-5xl bg-white shadow-md rounded-lg p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
         {/* Tool Selectors (Radio Group) */}
         <div className="flex items-center gap-6 border-r border-gray-200 pr-6">
-          {(["pencil", "line", "rect"] as DrawingTool[]).map((t,id) => (
-            <label key={id} className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer">
+          {(["pencil", "line", "rect"] as DrawingTool[]).map((t, id) => (
+            <label
+              key={id}
+              className="flex items-center gap-2 font-medium text-gray-700 cursor-pointer"
+            >
               <input
                 type="radio"
                 name="tool"
@@ -39,7 +71,7 @@ const RoomPage = () => {
                 onChange={(e) => setTool(e.target.value as DrawingTool)}
                 className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
-              {t === 'rect' ? "Rectangle": t }
+              {t === "rect" ? "Rectangle" : t}
             </label>
           ))}
         </div>
@@ -60,13 +92,23 @@ const RoomPage = () => {
 
         {/* Undo/Redo & Utility Actions */}
         <div className="flex items-center gap-2">
-          <button className="px-4 py-2 border border-blue-600 text-blue-600 font-medium rounded hover:bg-blue-50 transition duration-200">
+          <button 
+          className="px-4 py-2 border border-blue-600 text-blue-600 font-medium rounded hover:bg-blue-50 transition duration-200"
+          disabled={elements.length === 0}
+          onClick={handleUndo}
+          >
             Undo
           </button>
-          <button className="px-4 py-2 border border-blue-600 text-blue-600 font-medium rounded hover:bg-blue-50 transition duration-200">
+          <button className="px-4 py-2 border border-blue-600 text-blue-600 font-medium rounded hover:bg-blue-50 transition duration-200"
+          disabled={history.length < 1}
+          onClick={handleRedo}
+          >
             Redo
           </button>
-          <button className="px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition duration-200 ml-2">
+          <button
+            className="px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition duration-200 ml-2"
+            onClick={handleClearCanvas}
+          >
             Clear Canvas
           </button>
         </div>
@@ -79,11 +121,12 @@ const RoomPage = () => {
 
       {/* Main Drawing Area Wrapper */}
       <div className="w-full max-w-5xl h-125 bg-white shadow-lg rounded-xs overflow-hidden mb-8">
-        <Whiteboard 
+        <Whiteboard
           canvasRef={canvasRef}
           canvasContextRef={canvasContextRef}
           elements={elements}
           setElements={setElements}
+          color={color}
           tool={tool}
         />
       </div>
