@@ -1,41 +1,89 @@
+import { useState, } from "react";
+import type { RoomData, Uuid } from "../../../types";
+import { useNavigate } from "react-router-dom";
 
-const CreateRoomForm = () => {
+
+
+const CreateRoomForm = ({ uuid, socket, setUser }: Uuid) => {
+
+  const [roomId, setRoomId] = useState<string>(uuid());
+  const [name, setName] = useState<string>("");
+
+  const navigate = useNavigate();
+  
+  const handleCreateRoom = (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // name, roomId, userId, host and present
+
+    const roomData: RoomData = {
+      name,
+      roomId,
+      userId: uuid(),
+      host: true,
+      presenter: true,
+    };
+    setUser(roomData)
+    navigate(`/${roomId}`)
+    console.log(roomData);
+    
+    socket.emit("userJoined",roomData)
+  };
+
   return (
-    <div className="w-6xl max-w-xs">
-      <form className="bg-white  rounded px-5 pt-6 pb-8 mb-2">
+    <div className="w-full max-w-md mx-auto">
+      <form
+        onSubmit={handleCreateRoom}
+        className="bg-white  rounded px-5 pt-6 pb-8 mb-2"
+      >
         <div className="mb-4">
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="username"
             type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
           />
         </div>
 
-        <div className="mb-6 flex flex-row gap-1 w-xs">
+        <div className="mb-6 flex flex-col sm:flex-row gap-2">
           <input
-            className="shadow appearance-none border border-none rounded w-full py-4 px-3 text-gray-700 mb-3 leading-tight outline-none focus:outline-none focus:shadow-outline"
+            className="min-w-0 shadow border rounded w-full py-3 px-3 text-gray-700 outline-none cursor-no-drop"
             id="code"
             type="text"
+            value={roomId}
             placeholder="Generate room code"
             disabled
           />
-          <div className="flex items-center justify-between gap-2">
+
+          <div className="flex gap-2">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
               type="button"
+              onClick={() => setRoomId(uuid())}
             >
-              generate
+              Generate
             </button>
-            <button type="button" className="outline-red-600 text-sm border-2 py-2 px-2 rounded-md active:scale-95">Copy</button>
+
+            <button
+              type="button"
+              className="border-2 py-2 px-4 rounded-md active:scale-95 cursor-pointer"
+            >
+              Copy
+            </button>
           </div>
         </div>
 
-        <button type="submit" className="text-white py-2 bg-blue-500 hover:bg-blue-700 w-full">Generate Room</button>
+        <button
+          type="submit"
+          className="w-full bg-blue-500 hover:bg-blue-700 text-white py-3 rounded-lg font-medium cursor-pointer"
+        >
+          Generate Room
+        </button>
       </form>
- 
     </div>
   );
-}
+};
 
 export default CreateRoomForm
