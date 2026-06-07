@@ -16,7 +16,13 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket: Socket) => {
-  console.log(`User connected: ${socket.id}`);
+  // console.log(`User connected: ${socket.id}`);
+  socket.on("userJoined",(data)=>{
+    const {name, userId, roomId, host, presenter} = data
+
+    socket.join(roomId)
+    socket.emit("userIsJoined",{success:true})
+  })
 })
 
 
