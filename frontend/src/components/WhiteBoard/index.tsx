@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import rough from "roughjs";
-import type { DrawingTool, ElementType } from "../../types";
+import type { DrawingTool, ElementType, RoomData } from "../../types";
+import type { Socket } from "socket.io-client";
 
 const roughGenerator = rough.generator();
 
@@ -15,6 +16,8 @@ type CanvasProps = {
   setElements: React.Dispatch<React.SetStateAction<ElementType[]>>;
   tool: DrawingTool;
   color:string;
+  user:RoomData | null;
+  socket:Socket
 };
 
 const Whiteboard = ({
@@ -23,8 +26,21 @@ const Whiteboard = ({
   elements,
   setElements,
   tool,
-  color
+  color,
+  user,
+  socket
 }: CanvasProps) => {
+  
+      if (!user?.presenter) {
+        return (
+          <div className="border-black border-2 h-full w-full overflow-hidden">
+            <img src={"null"} alt="whiteboard sharing app" />
+          </div>
+        );
+      }
+
+
+
   //check user can drawing or not
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
@@ -53,8 +69,12 @@ const Whiteboard = ({
   canvasContextRef.current.strokeStyle = color;
 }, [color]);
 
+  
 
   useLayoutEffect(() => {
+
+    if (!canvasRef.current) return;
+
     const roughCanvas = rough.canvas(canvasRef.current!);
 
     const canvas = canvasRef.current;
@@ -105,6 +125,9 @@ const Whiteboard = ({
          }
        }
     });
+
+    const canvasImage = canvasRef.current.toDataURL()
+    socket.emit("whiteboardData",canvasImage)
 
 
   }, [elements]);

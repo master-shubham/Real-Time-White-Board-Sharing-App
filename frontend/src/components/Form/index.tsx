@@ -46,7 +46,7 @@ const Forms = ({ uuid, socket, setUser }: Uuid) => {
             {activeTab === "create" ? (
               <CreateRoomForm uuid={uuid} socket={socket} setUser={setUser} />
             ) : (
-              <JoinRoomForm />
+              <JoinRoomForm uuid={uuid} socket={socket} setUser={setUser} />
             )}
           </div>
         </div>
