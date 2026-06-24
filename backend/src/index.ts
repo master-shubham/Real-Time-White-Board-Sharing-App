@@ -15,14 +15,28 @@ app.get("/", (req, res) => {
   res.send("This is MERN realtime whiteboard sharing app.");
 });
 
+let roomIdGlobal:string | null=null,imgURLGlobal:string | null=null;
+
 io.on("connection", (socket: Socket) => {
   // console.log(`User connected: ${socket.id}`);
   socket.on("userJoined",(data)=>{
     const {name, userId, roomId, host, presenter} = data
-
+    roomIdGlobal=roomId
     socket.join(roomId)
     socket.emit("userIsJoined",{success:true})
+    socket.broadcast.to(roomId).emit("whiteboardDataResponse",{
+      imgURL:imgURLGlobal,
+    });
   })
+
+  socket.on("whiteboardData",(data)=>{
+    imgURLGlobal = data
+    if (!roomIdGlobal) return;
+    socket.broadcast.to(roomIdGlobal).emit("whiteboardDataResponse", {
+      imgURL: data,
+    });
+  })
+
 })
 
 

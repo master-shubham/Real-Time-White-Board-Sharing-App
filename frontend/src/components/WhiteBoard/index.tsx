@@ -30,11 +30,19 @@ const Whiteboard = ({
   user,
   socket
 }: CanvasProps) => {
+
+    const [img, setImg] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+      socket.on("whiteboardDataResponse", (data) => {
+        setImg(data.imgURL);
+      });
+    }, []);
   
       if (!user?.presenter) {
         return (
           <div className="border-black border-2 h-full w-full overflow-hidden">
-            <img src={"null"} alt="whiteboard sharing app" />
+            <img src={img} alt="whiteboard sharing app" />
           </div>
         );
       }
