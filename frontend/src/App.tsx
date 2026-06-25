@@ -24,16 +24,23 @@ const socket: Socket = io(
 function App() {
 
   const [user,setUser] = useState<RoomData | null>(null)
+  const [users,setUsers] = useState([])
 
   useEffect(()=>{
     socket.on("userIsJoined",(data)=>{
       if (data.success) {
         console.log("userIsJoined");
+         setUsers(data.users);
       }else{
         console.log("userIsJoined error");
         
       }
     });
+    
+    socket.on("allUsers",(data)=>{
+      setUsers(data)
+    })
+    
   },[])
 
   const uuid = ():string=>{
@@ -51,7 +58,7 @@ function App() {
     <div className="container mx-auto">
       <Routes>
         <Route path="/" element={<Forms uuid={uuid} socket={socket} setUser={setUser} />} />
-        <Route path="/:roomId" element={<RoomPage user={user} socket={socket} />} />
+        <Route path="/:roomId" element={<RoomPage user={user} socket={socket} users={users} />} />
       </Routes>
     </div>
   );

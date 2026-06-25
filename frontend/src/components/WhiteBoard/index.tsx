@@ -5,7 +5,6 @@ import type { Socket } from "socket.io-client";
 
 const roughGenerator = rough.generator();
 
-
 // RoomPage Props Type
 type CanvasProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -15,9 +14,9 @@ type CanvasProps = {
   elements: ElementType[];
   setElements: React.Dispatch<React.SetStateAction<ElementType[]>>;
   tool: DrawingTool;
-  color:string;
-  user:RoomData | null;
-  socket:Socket
+  color: string;
+  user: RoomData | null;
+  socket: Socket;
 };
 
 const Whiteboard = ({
@@ -28,26 +27,29 @@ const Whiteboard = ({
   tool,
   color,
   user,
-  socket
+  socket,
 }: CanvasProps) => {
+  const [img, setImg] = useState<string | undefined>(undefined);
 
-    const [img, setImg] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    const handler = (data: any) => {
+      setImg(data.imgURL);
+    };
 
-    useEffect(() => {
-      socket.on("whiteboardDataResponse", (data) => {
-        setImg(data.imgURL);
-      });
-    }, []);
-  
-      if (!user?.presenter) {
-        return (
-          <div className="border-black border-2 h-full w-full overflow-hidden">
-            <img src={img} alt="whiteboard sharing app" />
-          </div>
-        );
-      }
+    socket.on("whiteboardDataResponse", handler);
 
+    return () => {
+      socket.off("whiteboardDataResponse", handler);
+    };
+  }, [socket]);
 
+  if (!user?.presenter) {
+    return (
+      <div className="border-black border-2 h-full w-full overflow-hidden">
+        <img src={img} alt="whiteboard sharing app" className="w-full h-auto" />
+      </div>
+    );
+  }
 
   //check user can drawing or not
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
@@ -57,30 +59,26 @@ const Whiteboard = ({
 
     if (!canvas) return;
 
-    canvas.height = window.innerHeight * 2;
-    canvas.width = window.innerWidth * 2;
+    canvas.width = 1200;
+    canvas.height = 700;
     const canvasContext = canvas?.getContext("2d");
 
-    if (!canvasContext) return
+    if (!canvasContext) return;
 
     canvasContext.strokeStyle = color;
     canvasContext.lineWidth = 2;
     canvasContext.lineCap = "round";
 
     canvasContextRef.current = canvasContext;
-
   }, []);
 
- useEffect(() => {
-  if (!canvasContextRef.current) return;
+  useEffect(() => {
+    if (!canvasContextRef.current) return;
 
-  canvasContextRef.current.strokeStyle = color;
-}, [color]);
-
-  
+    canvasContextRef.current.strokeStyle = color;
+  }, [color]);
 
   useLayoutEffect(() => {
-
     if (!canvasRef.current) return;
 
     const roughCanvas = rough.canvas(canvasRef.current!);
@@ -93,51 +91,48 @@ const Whiteboard = ({
       canvasContextRef.current?.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-
     elements.forEach((element) => {
-       if (element.type === "rect") {
-         roughCanvas.draw(
-           roughGenerator.rectangle(
-             element.offsetX,
-             element.offsetY,
-             element.width ?? 0,
-             element.height ?? 0,
-             {
+      if (element.type === "rect") {
+        roughCanvas.draw(
+          roughGenerator.rectangle(
+            element.offsetX,
+            element.offsetY,
+            element.width ?? 0,
+            element.height ?? 0,
+            {
               stroke: element.stroke,
               strokeWidth: 5,
-              roughness:0,
-             },
-           ),
-         );
-       } else if (element.type === "line") {
-         roughCanvas.draw(
-           roughGenerator.line(
-             element.offsetX,
-             element.offsetY,
-             element.width ?? 0,
-             element.height ?? 0,
-             {
-               stroke: element.stroke,
-               strokeWidth: 5,
-               roughness: 0,
-             },
-           ),
-         );
-       } else if (element.type === "pencil") {
-         if (element.path) {
-           roughCanvas.linearPath(element.path, {
-             stroke: element.stroke,
-             strokeWidth: 5,
-             roughness: 0,
-           });
-         }
-       }
+              roughness: 0,
+            },
+          ),
+        );
+      } else if (element.type === "line") {
+        roughCanvas.draw(
+          roughGenerator.line(
+            element.offsetX,
+            element.offsetY,
+            element.width ?? 0,
+            element.height ?? 0,
+            {
+              stroke: element.stroke,
+              strokeWidth: 5,
+              roughness: 0,
+            },
+          ),
+        );
+      } else if (element.type === "pencil") {
+        if (element.path) {
+          roughCanvas.linearPath(element.path, {
+            stroke: element.stroke,
+            strokeWidth: 5,
+            roughness: 0,
+          });
+        }
+      }
     });
 
-    const canvasImage = canvasRef.current.toDataURL()
-    socket.emit("whiteboardData",canvasImage)
-
-
+    const canvasImage = canvasRef.current.toDataURL();
+    socket.emit("whiteboardData", canvasImage);
   }, [elements]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -219,14 +214,14 @@ const Whiteboard = ({
             }
           });
         });
-      }else if (tool === "rect") {
+      } else if (tool === "rect") {
         setElements((prevElement: ElementType[]) => {
           return prevElement.map((ele, index) => {
             if (index === elements.length - 1) {
               return {
                 ...ele,
                 width: offsetX - ele.offsetX,
-                height: offsetY - ele.offsetY ,
+                height: offsetY - ele.offsetY,
               };
             } else {
               return ele;

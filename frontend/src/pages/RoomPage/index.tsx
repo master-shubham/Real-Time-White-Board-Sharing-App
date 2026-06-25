@@ -6,10 +6,11 @@ import { useRef, useState } from "react";
 
 type RoomPageProps = {
   user: RoomData | null;
-  socket:Socket
+  socket:Socket;
+  users:RoomData[]
 };
 
-const RoomPage = ({user,socket}: RoomPageProps) => {
+const RoomPage = ({user,socket,users}: RoomPageProps) => {
   // canvas Refrence
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null | undefined>(
@@ -18,7 +19,7 @@ const RoomPage = ({user,socket}: RoomPageProps) => {
 
   const [tool, setTool] = useState<DrawingTool>("pencil");
   const [color, setColor] = useState<string>("#000000");
-  const [usersOnline, setUsersOnline] = useState<number>(0);
+  // const [usersOnline, setUsersOnline] = useState<number>(0);
   const [history, setHistory] = useState<ElementType[]>([]);
 
   const [elements, setElements] = useState<ElementType[]>([]);
@@ -129,7 +130,7 @@ const RoomPage = ({user,socket}: RoomPageProps) => {
 
       {/* Users Status */}
       <div className="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full">
-        Users Online: <span className="text-blue-600">{usersOnline}</span>
+        Users Online: <span className="text-blue-600">{users.length}</span>
       </div>
 
       {/* Main Drawing Area Wrapper */}

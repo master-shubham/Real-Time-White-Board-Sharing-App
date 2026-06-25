@@ -1,9 +1,21 @@
 import express from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
+import {addUser} from './utils/users'
+
+
+export type RoomData = {
+  name: string;
+  userId: string;
+  roomId: string;
+  host: boolean;
+  presenter: boolean;
+};
 
 const app = express();
 const server = http.createServer(app);
+
+
 
 const io = new Server(server, {
   cors: {
@@ -19,11 +31,13 @@ let roomIdGlobal:string | null=null,imgURLGlobal:string | null=null;
 
 io.on("connection", (socket: Socket) => {
   // console.log(`User connected: ${socket.id}`);
-  socket.on("userJoined",(data)=>{
+  socket.on("userJoined",(data:RoomData)=>{
     const {name, userId, roomId, host, presenter} = data
     roomIdGlobal=roomId
     socket.join(roomId)
-    socket.emit("userIsJoined",{success:true})
+    const users = addUser(data)
+    socket.emit("userIsJoined", { success: true,users });
+     socket.broadcast.to(roomId).emit("allUsers", users);
     socket.broadcast.to(roomId).emit("whiteboardDataResponse",{
       imgURL:imgURLGlobal,
     });
