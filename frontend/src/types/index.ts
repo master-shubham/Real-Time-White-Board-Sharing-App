@@ -17,7 +17,7 @@ export type DrawingTool = "pencil" | "line" | "rect";
 export type Uuid = {
   uuid: () => string;
   socket: Socket;
-  setUser: React.Dispatch<React.SetStateAction<RoomData | null>>;;
+  setUser: React.Dispatch<React.SetStateAction<RoomData | null>>;
 };
 
 

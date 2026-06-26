@@ -6,11 +6,11 @@ import { useRef, useState } from "react";
 
 type RoomPageProps = {
   user: RoomData | null;
-  socket:Socket;
-  users:RoomData[]
+  socket: Socket;
+  users: RoomData[];
 };
 
-const RoomPage = ({user,socket,users}: RoomPageProps) => {
+const RoomPage = ({ user, socket, users }: RoomPageProps) => {
   // canvas Refrence
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const canvasContextRef = useRef<CanvasRenderingContext2D | null | undefined>(
@@ -19,10 +19,9 @@ const RoomPage = ({user,socket,users}: RoomPageProps) => {
 
   const [tool, setTool] = useState<DrawingTool>("pencil");
   const [color, setColor] = useState<string>("#000000");
-  // const [usersOnline, setUsersOnline] = useState<number>(0);
   const [history, setHistory] = useState<ElementType[]>([]);
-
   const [elements, setElements] = useState<ElementType[]>([]);
+  const [openedUserTab, setOpenedUserTab] = useState<boolean>(false);
 
   const handleClearCanvas = () => {
     const canvas = canvasRef.current;
@@ -60,6 +59,34 @@ const RoomPage = ({user,socket,users}: RoomPageProps) => {
 
   return (
     <div className="container mx-auto px-4 min-h-screen  flex flex-col items-center">
+      <button
+        type="button"
+        className="bg-gray-800 hover:bg-gray-700 active:scale-95 text-white block absolute left-5 top-5 h-10 w-25 cursor-pointer "
+        onClick={() => setOpenedUserTab((prev) => !prev)}
+      >
+        Users
+      </button>
+      <div
+        className={`fixed top-0 left-0 h-full w-62.5 text-white bg-black text-center
+                  transition-transform duration-300 ease-in-out
+                  ${openedUserTab ? "-translate-x-full" : "translate-x-0"}`}
+      >
+        <button
+          type="button"
+          className="bg-white text-black w-60 p-1.5 mt-5 cursor-pointer"
+          onClick={() => setOpenedUserTab((prev) => !prev)}
+        >
+          Close
+        </button>
+
+        <div className="w-full mt-5 pt-5">
+          {users.map((usr, index) => (
+            <p key={index * 999} className="w-full my-2 text-center">
+              {usr.name} {user && user.userId === usr.userId && "(You)"}
+            </p>
+          ))}
+        </div>
+      </div>
       {/* Title */}
       <h1 className="text-3xl font-bold text-center text-gray-800 mt-4 shadow-cyan-400">
         Whiteboard Sharing App
