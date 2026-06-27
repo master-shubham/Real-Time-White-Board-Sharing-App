@@ -54,10 +54,17 @@ io.on("connection", (socket: Socket) => {
     });
   })
 
+  socket.on("message",(data)=>{
+    const {message} =data
+    if (!roomIdGlobal) return;
+     const user = getUser(socket.id);
+     if (user) {
+       socket.broadcast.to(roomIdGlobal).emit("messageResponse",{message,name:user.name})
+     }
+  })
+
   socket.on("disconnect",()=>{
     const user = getUser(socket.id)
-    console.log("diconnect",user);
-    
     if (user) {
       removeUser(socket.id)
       socket.broadcast.to(roomIdGlobal!).emit("userLeftMessage",user.name)

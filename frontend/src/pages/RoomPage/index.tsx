@@ -3,6 +3,7 @@ import Whiteboard from "../../components/WhiteBoard";
 import type { DrawingTool, ElementType, RoomData } from "../../types";
 import "./index.css";
 import {  useRef, useState } from "react";
+import ChatBar from "../../components/ChatBar";
 
 type RoomPageProps = {
   user: RoomData | null;
@@ -22,6 +23,7 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
   const [history, setHistory] = useState<ElementType[]>([]);
   const [elements, setElements] = useState<ElementType[]>([]);
   const [openedUserTab, setOpenedUserTab] = useState<boolean>(false);
+  const [openedChatTab, setOpenedChatTab] = useState<boolean | null>(false);
 
   const handleClearCanvas = () => {
     const canvas = canvasRef.current;
@@ -62,10 +64,17 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
     <div className="container mx-auto px-4 min-h-screen  flex flex-col items-center">
       <button
         type="button"
-        className="bg-gray-800 hover:bg-gray-700 active:scale-95 text-white block absolute left-5 top-5 h-10 w-25 cursor-pointer "
+        className="bg-gray-800 hover:bg-gray-700 active:scale-95 text-white block absolute rounded left-5 top-5 h-10 w-25 cursor-pointer "
         onClick={() => setOpenedUserTab(true)}
       >
         Users
+      </button>
+      <button
+        type="button"
+        className="bg-blue-800 hover:bg-blue-700 active:scale-95 text-white block absolute left-32 rounded top-5 h-10 w-25 cursor-pointer "
+        onClick={() => setOpenedChatTab(true)}
+      >
+        Chats
       </button>
 
       {openedUserTab && (
@@ -90,6 +99,10 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
             ))}
           </div>
         </div>
+      )}
+
+      {openedChatTab && (
+        <ChatBar setOpenedChatTab={setOpenedChatTab} openedChatTab={openedChatTab} socket={socket} />
       )}
 
       {/* Title */}
