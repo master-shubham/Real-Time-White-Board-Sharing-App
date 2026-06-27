@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import './App.css'
+import { ToastContainer, toast } from "react-toastify";
+
 import Forms from './components/Form';
 import RoomPage from './pages/RoomPage';
 
@@ -40,7 +42,15 @@ function App() {
     socket.on("allUsers",(data)=>{
       setUsers(data)
     })
+
+    socket.on("userIsJoinedMessage",(data)=>{
+      toast.info(`${data} joined the room`)
+    });
     
+    socket.on("userLeftMessage", (data) => {
+      toast.info(`${data} left the room`);
+    });
+
   },[])
 
   const uuid = ():string=>{
@@ -56,6 +66,7 @@ function App() {
 
   return (
     <div className="container mx-auto">
+      <ToastContainer/>
       <Routes>
         <Route path="/" element={<Forms uuid={uuid} socket={socket} setUser={setUser} />} />
         <Route path="/:roomId" element={<RoomPage user={user} socket={socket} users={users} />} />

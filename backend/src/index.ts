@@ -1,7 +1,7 @@
 import express from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
-import {addUser} from './utils/users'
+import {addUser, getUser, removeUser} from './utils/users'
 
 
 export type RoomData = {
@@ -10,6 +10,7 @@ export type RoomData = {
   roomId: string;
   host: boolean;
   presenter: boolean;
+  socketId?:string;
 };
 
 const app = express();
@@ -27,7 +28,8 @@ app.get("/", (req, res) => {
   res.send("This is MERN realtime whiteboard sharing app.");
 });
 
-let roomIdGlobal:string | null=null,imgURLGlobal:string | null=null;
+let roomIdGlobal:string | null=null
+let imgURLGlobal:string | null=null;
 
 io.on("connection", (socket: Socket) => {
   // console.log(`User connected: ${socket.id}`);
@@ -35,8 +37,9 @@ io.on("connection", (socket: Socket) => {
     const {name, userId, roomId, host, presenter} = data
     roomIdGlobal=roomId
     socket.join(roomId)
-    const users = addUser(data)
+    const users = addUser({ name, userId, roomId, host, presenter,socketId:socket.id });
     socket.emit("userIsJoined", { success: true,users });
+     socket.broadcast.to(roomId).emit("userIsJoinedMessage", name);
      socket.broadcast.to(roomId).emit("allUsers", users);
     socket.broadcast.to(roomId).emit("whiteboardDataResponse",{
       imgURL:imgURLGlobal,
@@ -49,6 +52,16 @@ io.on("connection", (socket: Socket) => {
     socket.broadcast.to(roomIdGlobal).emit("whiteboardDataResponse", {
       imgURL: data,
     });
+  })
+
+  socket.on("disconnect",()=>{
+    const user = getUser(socket.id)
+    console.log("diconnect",user);
+    
+    if (user) {
+      removeUser(socket.id)
+      socket.broadcast.to(roomIdGlobal!).emit("userLeftMessage",user.name)
+    }
   })
 
 })

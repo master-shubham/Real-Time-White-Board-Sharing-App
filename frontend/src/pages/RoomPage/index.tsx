@@ -2,7 +2,7 @@ import type { Socket } from "socket.io-client";
 import Whiteboard from "../../components/WhiteBoard";
 import type { DrawingTool, ElementType, RoomData } from "../../types";
 import "./index.css";
-import { useRef, useState } from "react";
+import {  useRef, useState } from "react";
 
 type RoomPageProps = {
   user: RoomData | null;
@@ -56,37 +56,42 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
       prevHistory.slice(0, prevHistory.length - 1),
     );
   };
+  
 
   return (
     <div className="container mx-auto px-4 min-h-screen  flex flex-col items-center">
       <button
         type="button"
         className="bg-gray-800 hover:bg-gray-700 active:scale-95 text-white block absolute left-5 top-5 h-10 w-25 cursor-pointer "
-        onClick={() => setOpenedUserTab((prev) => !prev)}
+        onClick={() => setOpenedUserTab(true)}
       >
         Users
       </button>
-      <div
-        className={`fixed top-0 left-0 h-full w-62.5 text-white bg-black text-center
-                  transition-transform duration-300 ease-in-out
-                  ${openedUserTab ? "-translate-x-full" : "translate-x-0"}`}
-      >
-        <button
-          type="button"
-          className="bg-white text-black w-60 p-1.5 mt-5 cursor-pointer"
-          onClick={() => setOpenedUserTab((prev) => !prev)}
-        >
-          Close
-        </button>
 
-        <div className="w-full mt-5 pt-5">
-          {users.map((usr, index) => (
-            <p key={index * 999} className="w-full my-2 text-center">
-              {usr.name} {user && user.userId === usr.userId && "(You)"}
-            </p>
-          ))}
+      {openedUserTab && (
+        <div
+          className={`fixed top-0 left-0 h-full w-62.5 text-white bg-black text-center
+                  transition-transform duration-300 ease-in-out
+                  ${!openedUserTab ? "-translate-x-full" : "translate-x-0"}`}
+        >
+          <button
+            type="button"
+            className="bg-white text-black w-60 p-1.5 mt-5 cursor-pointer"
+            onClick={() => setOpenedUserTab(false)}
+          >
+            Close
+          </button>
+
+          <div className="w-full mt-5 pt-5">
+            {users.map((usr, index) => (
+              <p key={index * 999} className="w-full my-2 text-center">
+                {usr.name} {user && user.userId === usr.userId && "(You)"}
+              </p>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
       {/* Title */}
       <h1 className="text-3xl font-bold text-center text-gray-800 mt-4 shadow-cyan-400">
         Whiteboard Sharing App
