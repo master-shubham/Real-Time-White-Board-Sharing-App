@@ -62,21 +62,22 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
 
   return (
     <div className="container mx-auto px-4 min-h-screen  flex flex-col items-center">
-      <button
-        type="button"
-        className="bg-gray-800 hover:bg-gray-700 active:scale-95 text-white block absolute rounded left-5 top-5 h-10 w-25 cursor-pointer "
-        onClick={() => setOpenedUserTab(true)}
-      >
-        Users
-      </button>
-      <button
-        type="button"
-        className="bg-blue-800 hover:bg-blue-700 active:scale-95 text-white block absolute left-32 rounded top-5 h-10 w-25 cursor-pointer "
-        onClick={() => setOpenedChatTab(true)}
-      >
-        Chats
-      </button>
-
+      
+        <button
+          type="button"
+          className="bg-gray-800 hover:bg-gray-700 active:scale-95 text-white block absolute rounded left-5 top-5 h-10 w-20 cursor-pointer "
+          onClick={() => setOpenedUserTab(true)}
+        >
+          Users
+        </button>
+        <button
+          type="button"
+          className="bg-blue-800 hover:bg-blue-700 active:scale-95 text-white block absolute left-28 rounded top-5 h-10 w-20 cursor-pointer "
+          onClick={() => setOpenedChatTab(true)}
+        >
+          Chats
+        </button>
+      
       {openedUserTab && (
         <div
           className={`fixed top-0 left-0 h-full w-62.5 text-white bg-black text-center
@@ -85,7 +86,7 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
         >
           <button
             type="button"
-            className="bg-white text-black w-60 p-1.5 mt-5 cursor-pointer"
+            className="bg-white text-black w-60 p-1.5 mt-5 rounded cursor-pointer"
             onClick={() => setOpenedUserTab(false)}
           >
             Close
@@ -102,7 +103,11 @@ const RoomPage = ({ user, socket, users }: RoomPageProps) => {
       )}
 
       {openedChatTab && (
-        <ChatBar setOpenedChatTab={setOpenedChatTab} openedChatTab={openedChatTab} socket={socket} />
+        <ChatBar
+          setOpenedChatTab={setOpenedChatTab}
+          openedChatTab={openedChatTab}
+          socket={socket}
+        />
       )}
 
       {/* Title */}
